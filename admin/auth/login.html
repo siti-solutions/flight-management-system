@@ -155,7 +155,7 @@
       fetch('http://localhost:3000/airlineAdmins')
         .then(res => res.json())
         .then(admins => {
-          const match = admins.find(a => a.email === email && a.password === password && !a.deleted);
+          const match = admins.find(a => a.email == email && a.password == password && !a.deleted);
           if (match) {
             localStorage.setItem('adminId', match.id);
             localStorage.setItem('adminName', match.name);

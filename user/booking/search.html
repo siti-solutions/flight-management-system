@@ -290,15 +290,15 @@
         fetch('http://localhost:3000/flights').then(res => res.json()),
         fetch('http://localhost:3000/airports').then(res => res.json())
       ]).then(([flights, airports]) => {
-        const fromAirport = airports.find(a => a.city.trim().toLowerCase() === from);
-        const toAirport = airports.find(a => a.city.trim().toLowerCase() === to);
+        const fromAirport = airports.find(a => a.city.trim().toLowerCase() == from);
+        const toAirport = airports.find(a => a.city.trim().toLowerCase() == to);
 
         const fromId = fromAirport ? parseInt(fromAirport.id) : null;
         const toId = toAirport ? parseInt(toAirport.id) : null;
         console.log(fromId, toId);
         const results = flights.filter(f =>
-          f.departureAirportId === fromId &&
-          f.arrivalAirportId === toId &&
+          f.departureAirportId == fromId &&
+          f.arrivalAirportId == toId &&
           !f.deleted &&
           !f.disabled &&
           f.status !== 'Cancelled'
@@ -321,7 +321,7 @@
           tableBody.appendChild(row);
         });
 
-        if (results.length === 0) {
+        if (results.length == 0) {
           message.textContent = "No flights available for the selected criteria.";
           message.style.display = 'block';
           document.getElementById('flights-table').style.display = 'none';
@@ -363,7 +363,7 @@
             }
           }
 
-          if (assignedIndex === null) {
+          if (assignedIndex == null) {
             alert(`${seatClassInput} is fully booked.`);
             return;
           }
@@ -374,6 +374,14 @@
 
           const bookedFor = document.getElementById('date').value;
 
+          let amount = 0;
+          if (seatClassInput === 'First') {
+            amount = Math.floor(Math.random() * (18000 - 15000 + 1)) + 15000;
+          } else if (seatClassInput === 'Business') {
+            amount = Math.floor(Math.random() * (12000 - 9000 + 1)) + 9000;
+          } else {
+            amount = Math.floor(Math.random() * (5000 - 2000 + 1)) + 2000;
+          }
           const booking = {
             userId: userId,
             flightId: parseInt(flightId),
@@ -383,7 +391,7 @@
             bookingTime: now.toTimeString().slice(0, 5),
             bookedFor: bookedFor,
             status: "Confirmed",
-            amount: 4500,
+            amount,
             deleted: false
           };
           fetch("http://localhost:3000/bookings", {

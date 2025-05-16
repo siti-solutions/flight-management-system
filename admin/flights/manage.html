@@ -304,9 +304,9 @@
           );
         }
         if (statusFilter) {
-          flights = flights.filter(f => f.status === statusFilter);
+          flights = flights.filter(f => f.status == statusFilter);
         }
-        flights.sort((a, b) => sortOrder === "asc"
+        flights.sort((a, b) => sortOrder == "asc"
           ? a.flightNumber.localeCompare(b.flightNumber)
           : b.flightNumber.localeCompare(a.flightNumber)
         );
@@ -335,6 +335,12 @@
   // Personalized greeting for admin
   const adminName = localStorage.getItem("adminName") || "Admin";
   document.getElementById("admin-name").textContent = `Hello, ${adminName}`;
+
+  // Add event listeners to filters and sorters to trigger loadFlights
+  document.getElementById("searchInput").addEventListener("input", loadFlights);
+  document.getElementById("statusFilter").addEventListener("change", loadFlights);
+  document.getElementById("sortOrder").addEventListener("change", loadFlights);
+
   loadFlights();
 </script>
 </body>

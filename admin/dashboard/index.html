@@ -166,7 +166,7 @@
         document.getElementById('total-flights').textContent = flights.length;
         const active = flights.filter(f => f.status !== 'Cancelled').length;
         document.getElementById('active-flights').textContent = active;
-        const cancelled = flights.filter(f => f.status === 'Cancelled').length;
+        const cancelled = flights.filter(f => f.status == 'Cancelled').length;
         document.getElementById('cancelled-flights').textContent = cancelled;
       });
 
@@ -174,7 +174,7 @@
       .then(res => res.json())
       .then(bookings => {
         const today = new Date().toISOString().split('T')[0];
-        const todaysBookings = bookings.filter(b => b.bookingDate === today);
+        const todaysBookings = bookings.filter(b => b.bookingDate == today);
         const totalRevenue = todaysBookings.reduce((sum, b) => sum + (b.amount || 0), 0);
         document.getElementById('bookings-today').textContent = todaysBookings.length;
         document.getElementById('todays-revenue').textContent = `₹${totalRevenue}`;

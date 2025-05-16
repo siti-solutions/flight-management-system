@@ -156,7 +156,7 @@ Promise.all([
   allBookings = bookings;
   allUsers = users;
   allAirports = airports;
-  myFlightIds = flights.filter(f => String(f.airlineAdminId) === String(adminId)).map(f => f.id);
+  myFlightIds = flights.filter(f => String(f.airlineAdminId) == String(adminId)).map(f => f.id);
 
   const flightFilter = document.getElementById('flightFilter');
   flights
@@ -178,12 +178,12 @@ Promise.all([
       bookings
         .filter(b => myFlightIds.includes(b.flightId))
         .forEach(b => {
-          const f = allFlights.find(flight => flight.id === b.flightId);
-          const u = allUsers.find(u => u.id === b.userId);
-          const fromAirport = allFlights.find(flt => flt.id === b.flightId)?.departureAirportId;
-          const toAirport = allFlights.find(flt => flt.id === b.flightId)?.arrivalAirportId;
-          const from = allAirports.find(ap => ap.id === fromAirport)?.city || '--';
-          const to = allAirports.find(ap => ap.id === toAirport)?.city || '--';
+          const f = allFlights.find(flight => flight.id == b.flightId);
+          const u = allUsers.find(u => u.id == b.userId);
+          const fromAirport = allFlights.find(flt => flt.id == b.flightId)?.departureAirportId;
+          const toAirport = allFlights.find(flt => flt.id == b.flightId)?.arrivalAirportId;
+          const from = allAirports.find(ap => ap.id == fromAirport)?.city || '--';
+          const to = allAirports.find(ap => ap.id == toAirport)?.city || '--';
 
           const bookedForDate = b.bookedFor ? new Date(`${b.bookedFor}T00:00:00`) : null;
           const bookingDateTime = new Date(`${b.bookingDate}T${b.bookingTime}`);
@@ -223,19 +223,19 @@ Promise.all([
       let filtered = allBookings;
 
       if (flightId) {
-        filtered = filtered.filter(b => String(b.flightId) === flightId);
+        filtered = filtered.filter(b => String(b.flightId) == flightId);
       }
 
       if (date) {
-        filtered = filtered.filter(b => b.bookingDate === date);
+        filtered = filtered.filter(b => b.bookingDate == date);
       }
 
       if (search) {
         filtered = filtered.filter(b => {
-          const f = allFlights.find(flight => flight.id === b.flightId);
-          const u = allUsers.find(u => u.id === b.userId);
-          const from = allAirports.find(ap => ap.id === f?.departureAirportId)?.city?.toLowerCase() || '';
-          const to = allAirports.find(ap => ap.id === f?.arrivalAirportId)?.city?.toLowerCase() || '';
+          const f = allFlights.find(flight => flight.id == b.flightId);
+          const u = allUsers.find(u => u.id == b.userId);
+          const from = allAirports.find(ap => ap.id == f?.departureAirportId)?.city?.toLowerCase() || '';
+          const to = allAirports.find(ap => ap.id == f?.arrivalAirportId)?.city?.toLowerCase() || '';
           const name = u?.name?.toLowerCase() || '';
           const seat = b.seatNumber?.toLowerCase() || '';
           const flightNo = f?.flightNumber?.toLowerCase() || '';

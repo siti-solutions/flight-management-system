@@ -222,7 +222,7 @@
           else classCount[b.seatClass] = 1;
 
           if (b.bookedFor) timeSeries[b.bookedFor] = (timeSeries[b.bookedFor] || 0) + 1;
-          if (b.status === 'Cancelled') cancelledBookings++;
+          if (b.status == 'Cancelled') cancelledBookings++;
 
           const route = `${flight.departureAirportId} → ${flight.arrivalAirportId}`;
           routeMap[route] = (routeMap[route] || 0) + 1;

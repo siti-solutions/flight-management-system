@@ -187,11 +187,11 @@
       fetch('http://localhost:3000/bookings').then(res => res.json()),
       fetch('http://localhost:3000/flights').then(res => res.json())
     ]).then(([bookings, flights]) => {
-      const userBookings = bookings.filter(b => String(b.userId) === String(userId) && !b.deleted);
+      const userBookings = bookings.filter(b => String(b.userId) == String(userId) && !b.deleted);
       tbody.innerHTML = '';
 
       userBookings.forEach(booking => {
-        const flight = flights.find(f => String(f.id) === String(booking.flightId));
+        const flight = flights.find(f => String(f.id) == String(booking.flightId));
         if (!flight) return;
 
         // Compute formatted departure and arrival using bookedFor date
@@ -212,7 +212,7 @@
           <td>${bookedDateTime}</td>
           <td>${booking.status}</td>
           <td>
-            ${booking.status === 'Confirmed' ? `<button type="button" onclick="cancelBooking('${booking.id}')">Cancel</button>` : ''}
+            ${booking.status == 'Confirmed' ? `<button type="button" onclick="cancelBooking('${booking.id}')">Cancel</button>` : ''}
             <button type="button" onclick="viewBooking('${booking.id}')">View</button>
           </td>
         `;

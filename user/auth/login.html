@@ -163,7 +163,7 @@
       fetch('http://localhost:3000/users')
         .then(res => res.json())
         .then(users => {
-          const match = users.find(u => u.email === email && u.password === password && !u.deleted);
+          const match = users.find(u => u.email == email && u.password == password && !u.deleted);
           if (match) {
             localStorage.setItem('userId', match.id);
             localStorage.setItem('userName', match.name);

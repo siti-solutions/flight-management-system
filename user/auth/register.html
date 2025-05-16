@@ -168,7 +168,7 @@
       fetch('http://localhost:3000/users')
         .then(res => res.json())
         .then(users => {
-          if (users.some(u => u.email === email && !u.deleted)) {
+          if (users.some(u => u.email == email && !u.deleted)) {
             alert('Email already registered.');
             return;
           }
