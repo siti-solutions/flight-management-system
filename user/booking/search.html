@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Search Flights</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f8fb;
+      color: #333;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .container {
+      display: flex;
+      flex: 1;
+      height: calc(100vh - 60px);
+    }
+
+    .sidebar {
+      width: 280px;
+      min-width: 280px;
+      max-width: 280px;
+      background-color: #003366;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100vh;
+      padding: 20px;
+    }
+
+    .sidebar .top {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar h2 {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+      font-weight: normal;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+      padding-bottom: 10px;
+    }
+
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      margin: 10px 0;
+      font-weight: bold;
+    }
+
+    .sidebar .bottom {
+      display: flex;
+      flex-direction: column;
+    }
+
+
+    .main {
+      flex: 1;
+      padding: 40px;
+      overflow-y: auto;
+    }
+
+    h1 {
+      margin-top: 0;
+      color: #007bff;
+    }
+
+    form {
+      background-color: white;
+      padding: 20px;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      margin-bottom: 30px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      margin-top: 20px;
+      background-color: #007bff;
+      color: white;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-top: 20px;
+      background-color: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    th,
+    td {
+      padding: 14px 18px;
+      border-bottom: 1px solid #e0e0e0;
+      text-align: center;
+    }
+
+    th:first-child {
+      border-top-left-radius: 8px;
+    }
+
+    th:last-child {
+      border-top-right-radius: 8px;
+    }
+
+    tr:hover {
+      background-color: #f7faff;
+    }
+
+    footer {
+      height: 60px;
+      background-color: #003366;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+
+<body>
+    <div class="container">
+      <div class="sidebar">
+        <div class="top">
+          <h2 id="user-name">Welcome</h2>
+          <a href="/user/booking/search.html">Search Flights</a>
+          <a href="/user/my-flights/index.html">My Flights</a>
+          <a href="/user/profile/index.html">Profile</a>
+          <a href="/user/auth/login.html" onclick="localStorage.clear()">Logout</a>
+        </div>
+      </div>
+
+    <div class="main">
+      <div id="loading" style="text-align:center; font-weight:bold; padding:20px;">Loading, please wait...</div>
+      <h1>Search Flights</h1>
+      <form id="search-form" style="display:none;">
+        <label for="from">From:</label>
+        <select id="from" name="from" required>
+          <option value="">Select departure</option>
+        </select>
+
+        <label for="to">To:</label>
+        <select id="to" name="to" required>
+          <option value="">Select arrival</option>
+        </select>
+
+        <label for="date">Date:</label>
+        <input type="date" id="date" name="date" required>
+
+        <label for="class">Class:</label>
+        <select id="seatClass" name="class">
+          <option value="Economy">Economy</option>
+          <option value="Business">Business</option>
+          <option value="First">First</option>
+        </select>
+
+        <input type="hidden" id="today-date" value="">
+
+        <button type="submit">Search</button>
+      </form>
+
+      <h2>Available Flights</h2>
+      <table id="flights-table" style="display:none;">
+        <thead>
+          <tr>
+            <th>Flight Number</th>
+            <th>Departure</th>
+            <th>Arrival</th>
+            <th>Status</th>
+            <th>Model</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Flights will be listed here -->
+        </tbody>
+      </table>
+      <p id="flight-message" style="display:none; color:#888; font-weight:bold; padding-top:10px;"></p>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 FlyHigh Airlines. All rights reserved.</p>
+  </footer>
+
+  <script>
+    const userId = localStorage.getItem('userId');
+    const userName = localStorage.getItem('userName') || 'User';
+    document.getElementById('user-name').textContent = `Hello, ${userName}`;
+
+    if (!userId) {
+      alert("Please log in.");
+      window.location.href = "/user/auth/login.html";
+    }
+
+    const form = document.getElementById('search-form');
+    const tableBody = document.querySelector('#flights-table tbody');
+
+    const fromSelect = document.getElementById('from');
+    const toSelect = document.getElementById('to');
+
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date').value = today;
+    document.getElementById('today-date').value = today;
+
+    let airportsData = [], flightsData = [];
+
+    Promise.all([
+      fetch('http://localhost:3000/airports').then(res => res.json()),
+      fetch('http://localhost:3000/flights').then(res => res.json())
+    ]).then(([airports, flights]) => {
+      airportsData = airports;
+      flightsData = flights;
+
+      // Populate the "From" dropdown with all unique airport cities
+      const fromCities = [...new Set(airports.map(a => a.city).filter(Boolean))];
+
+      fromCities.forEach(city => {
+        const option = document.createElement('option');
+        option.value = city;
+        option.textContent = city;
+        fromSelect.appendChild(option);
+      });
+
+      const toCities = [...new Set(airports.map(a => a.city).filter(Boolean))];
+      toCities.forEach(city => {
+        const option = document.createElement('option');
+        option.value = city;
+        option.textContent = city;
+        toSelect.appendChild(option);
+      });
+
+      // Hide loading, show form and show prompt after data is loaded
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('search-form').style.display = 'block';
+
+      const message = document.getElementById('flight-message');
+      message.textContent = "Please search for a flight.";
+      message.style.display = 'block';
+    });
+
+    fromSelect.addEventListener('change', () => {
+      toSelect.value = "";
+    });
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const from = document.getElementById('from').value.trim().toLowerCase();
+      const to = document.getElementById('to').value.trim().toLowerCase();
+      const seatClass = document.getElementById('seatClass').value;
+
+      Promise.all([
+        fetch('http://localhost:3000/flights').then(res => res.json()),
+        fetch('http://localhost:3000/airports').then(res => res.json())
+      ]).then(([flights, airports]) => {
+        const fromAirport = airports.find(a => a.city.trim().toLowerCase() === from);
+        const toAirport = airports.find(a => a.city.trim().toLowerCase() === to);
+
+        const fromId = fromAirport ? parseInt(fromAirport.id) : null;
+        const toId = toAirport ? parseInt(toAirport.id) : null;
+        console.log(fromId, toId);
+        const results = flights.filter(f =>
+          f.departureAirportId === fromId &&
+          f.arrivalAirportId === toId &&
+          !f.deleted &&
+          !f.disabled &&
+          f.status !== 'Cancelled'
+        );
+
+        const message = document.getElementById('flight-message');
+        message.style.display = 'none';
+
+        tableBody.innerHTML = '';
+        results.forEach(flight => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${flight.flightNumber}</td>
+            <td>${String(flight.departureHour).padStart(2, '0')}:${String(flight.departureMinute).padStart(2, '0')}</td>
+            <td>${String(flight.arrivalHour).padStart(2, '0')}:${String(flight.arrivalMinute).padStart(2, '0')}</td>
+            <td>${flight.status}</td>
+            <td>${flight.aircraftModel}</td>
+            <td><button onclick='bookFlight(${flight.id}, "${seatClass}")'>Book</button></td>
+          `;
+          tableBody.appendChild(row);
+        });
+
+        if (results.length === 0) {
+          message.textContent = "No flights available for the selected criteria.";
+          message.style.display = 'block';
+          document.getElementById('flights-table').style.display = 'none';
+        } else {
+          message.style.display = 'none';
+          document.getElementById('flights-table').style.display = 'table';
+        }
+      });
+    });
+
+    function bookFlight(flightId, seatClassInput) {
+      const now = new Date();
+
+      fetch('http://localhost:3000/bookings')
+        .then(res => res.json())
+        .then(bookings => {
+          const flightBookings = bookings.filter(b => b.flightId == flightId && !b.deleted);
+
+          const seatTaken = new Set(flightBookings.map(b => {
+            const match = b.seatNumber.match(/^(\d+)([A-F])$/);
+            if (!match) return -1;
+            const row = parseInt(match[1]);
+            const col = match[2].charCodeAt(0) - 'A'.charCodeAt(0);
+            return (row - 1) * 6 + col;
+          }));
+
+          const classRanges = {
+            'First': [0, 24],
+            'Business': [24, 74],
+            'Economy': [74, 150]
+          };
+
+          const [start, end] = classRanges[seatClassInput];
+          let assignedIndex = null;
+          for (let i = start; i < end; i++) {
+            if (!seatTaken.has(i)) {
+              assignedIndex = i;
+              break;
+            }
+          }
+
+          if (assignedIndex === null) {
+            alert(`${seatClassInput} is fully booked.`);
+            return;
+          }
+
+          const row = Math.floor(assignedIndex / 6) + 1;
+          const col = ['A', 'B', 'C', 'D', 'E', 'F'][assignedIndex % 6];
+          const seatNumber = `${row}${col}`;
+
+          const bookedFor = document.getElementById('date').value;
+
+          const booking = {
+            userId: userId,
+            flightId: parseInt(flightId),
+            seatNumber,
+            seatClass: seatClassInput,
+            bookingDate: document.getElementById('today-date').value,
+            bookingTime: now.toTimeString().slice(0, 5),
+            bookedFor: bookedFor,
+            status: "Confirmed",
+            amount: 4500,
+            deleted: false
+          };
+          fetch("http://localhost:3000/bookings", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(booking)
+          })
+            .then(res => res.json())
+            .then(savedBooking => {
+              window.location.href = `/user/booking/confirmation.html?bookingId=${savedBooking.id}`;
+            });
+        });
+    }
+  </script>
+</body>
+
+</html>

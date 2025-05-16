@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f8fb;
+      color: #333;
+    }
+
+    .container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 280px;
+      min-width: 280px;
+      max-width: 280px;
+      background-color: #003366;
+      color: white;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar h2 {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+      font-weight: normal;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+      padding-bottom: 10px;
+    }
+
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      margin: 10px 0;
+      font-weight: bold;
+    }
+
+    .main {
+      flex: 1;
+      padding: 40px;
+    }
+
+    h1 {
+      color: #007bff;
+      margin-top: 0;
+    }
+
+    .dashboard-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+      margin-top: 30px;
+    }
+
+    .card-link {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .card {
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      text-align: center;
+      transition: transform 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+    }
+
+    .card h3 {
+      margin: 0;
+      font-size: 1.2em;
+      color: #003366;
+    }
+
+    .card p {
+      font-size: 2em;
+      margin-top: 10px;
+      color: #007bff;
+    }
+
+    footer {
+      background-color: #003366;
+      color: white;
+      text-align: center;
+      padding: 20px 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="sidebar">
+      <h2 id="admin-name">Hello, Admin</h2>
+      <a href="/admin/dashboard/index.html">Dashboard</a>
+        <a href="/admin/flights/manage.html">Manage Flights</a>
+      <a href="/admin/airports/list.html">Airports</a>
+      <a href="/admin/users/list.html">Users</a>
+      <a href="/admin/bookings/index.html">Bookings</a>
+      <a href="/admin/reports/index.html">Reports</a>
+        <a href="/admin/profile/index.html">Profile</a>
+      <a href="/admin/auth/login.html" onclick="localStorage.clear()">Logout</a>
+    </div>
+    <div class="main">
+      <h1>Admin Dashboard</h1>
+      <div class="dashboard-stats">
+        <a href="/admin/flights/manage.html" class="card-link">
+          <div class="card">
+            <h3>Total Flights</h3>
+            <p id="total-flights">--</p>
+          </div>
+        </a>
+        <a href="/admin/bookings/index.html" class="card-link">
+          <div class="card">
+            <h3>Bookings Today</h3>
+            <p id="bookings-today">--</p>
+          </div>
+        </a>
+        <a href="/admin/flights/manage.html" class="card-link">
+          <div class="card">
+            <h3>Cancelled Flights</h3>
+            <p id="cancelled-flights">--</p>
+          </div>
+        </a>
+        <a href="/admin/flights/manage.html" class="card-link">
+          <div class="card">
+            <h3>Active Flights</h3>
+            <p id="active-flights">--</p>
+          </div>
+        </a>
+        <a href="/admin/users/list.html" class="card-link">
+          <div class="card">
+            <h3>Total Users</h3>
+            <p id="total-users">--</p>
+          </div>
+        </a>
+        <a href="/admin/reports/index.html" class="card-link">
+          <div class="card">
+            <h3>Today's Revenue</h3>
+            <p id="todays-revenue">--</p>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+  <footer>
+    <p>&copy; 2025 FlyHigh Airlines. All rights reserved.</p>
+  </footer>
+
+  <script>
+    const adminName = localStorage.getItem('adminName') || 'Admin';
+    document.getElementById('admin-name').textContent = `Hello, ${adminName}`;
+
+    fetch('http://localhost:3000/flights')
+      .then(res => res.json())
+      .then(flights => {
+        document.getElementById('total-flights').textContent = flights.length;
+        const active = flights.filter(f => f.status !== 'Cancelled').length;
+        document.getElementById('active-flights').textContent = active;
+        const cancelled = flights.filter(f => f.status === 'Cancelled').length;
+        document.getElementById('cancelled-flights').textContent = cancelled;
+      });
+
+    fetch('http://localhost:3000/bookings')
+      .then(res => res.json())
+      .then(bookings => {
+        const today = new Date().toISOString().split('T')[0];
+        const todaysBookings = bookings.filter(b => b.bookingDate === today);
+        const totalRevenue = todaysBookings.reduce((sum, b) => sum + (b.amount || 0), 0);
+        document.getElementById('bookings-today').textContent = todaysBookings.length;
+        document.getElementById('todays-revenue').textContent = `₹${totalRevenue}`;
+      });
+
+    fetch('http://localhost:3000/users')
+      .then(res => res.json())
+      .then(users => {
+        document.getElementById('total-users').textContent = users.length;
+      });
+  </script>
+</body>
+</html>

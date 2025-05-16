@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Users List</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f8fb;
+      color: #333;
+    }
+    .container {
+      display: flex;
+      min-height: 100vh;
+    }
+    .sidebar {
+      width: 280px;
+      min-width: 280px;
+      max-width: 280px;
+      background-color: #003366;
+      color: white;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar h2 {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+      font-weight: normal;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+      padding-bottom: 10px;
+    }
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      margin: 10px 0;
+      font-weight: bold;
+    }
+    .sidebar a:hover {
+      text-decoration: underline;
+    }
+    .main {
+      flex: 1;
+      padding: 40px;
+    }
+    h1 {
+      color: #007bff;
+      margin-top: 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 14px 18px;
+      border-bottom: 1px solid #e0e0e0;
+      text-align: center;
+    }
+    tr:hover {
+      background-color: #f0f8ff;
+    }
+    footer {
+      background-color: #003366;
+      color: white;
+      text-align: center;
+      padding: 20px 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="sidebar">
+      <h2 id="admin-name">Admin</h2>
+      <a href="/admin/dashboard/index.html">Dashboard</a>
+      <a href="/admin/flights/manage.html">Manage Flights</a>
+      <a href="/admin/airports/list.html">Airports</a>
+      <a href="/admin/users/list.html">Users</a>
+      <a href="/admin/bookings/index.html">Bookings</a>
+      <a href="/admin/reports/index.html">Reports</a>
+        <a href="/admin/profile/index.html">Profile</a>
+      <a href="/admin/auth/login.html" onclick="localStorage.clear()">Logout</a>
+    </div>
+    <div class="main">
+      <h1>Users Who Booked Flights</h1>
+      <table id="users-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Passport Number</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 FlyHigh Airlines. All rights reserved.</p>
+  </footer>
+
+  <script>
+    const adminId = localStorage.getItem('adminId');
+    const adminName = localStorage.getItem('adminName') || 'Admin';
+    document.getElementById('admin-name').textContent = `Hello, ${adminName}`;
+
+    const usersTableBody = document.querySelector('#users-table tbody');
+
+    Promise.all([
+      fetch('http://localhost:3000/bookings').then(res => res.json()),
+      fetch('http://localhost:3000/users').then(res => res.json()),
+      fetch('http://localhost:3000/flights').then(res => res.json())
+    ])
+    .then(([bookings, users, flights]) => {
+      const relevantFlights = flights.filter(f => f.airlineAdminId == adminId && !f.deleted);
+      const relevantFlightIds = relevantFlights.map(f => f.id);
+      const relevantBookings = bookings.filter(b => relevantFlightIds.includes(b.flightId) && !b.deleted);
+      const userIds = [...new Set(relevantBookings.map(b => b.userId))];
+      const relevantUsers = users.filter(u => userIds.includes(u.id) && !u.deleted);
+
+      usersTableBody.innerHTML = '';
+      relevantUsers.forEach(user => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${user.name}</td>
+          <td>${user.email}</td>
+          <td>${user.phoneNumber}</td>
+          <td>${user.passportNumber}</td>
+        `;
+        usersTableBody.appendChild(row);
+      });
+    })
+    .catch(error => {
+      console.error('Failed to load user data:', error);
+    });
+  </script>
+</body>
+</html>

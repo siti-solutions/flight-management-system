@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin - Bookings</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f8fb;
+      color: #333;
+    }
+
+    .container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 280px;
+      min-width: 280px;
+      max-width: 280px;
+      background-color: #003366;
+      color: white;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar h2 {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+      font-weight: normal;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+      padding-bottom: 10px;
+    }
+
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      margin: 10px 0;
+      font-weight: bold;
+    }
+
+    .main {
+      flex: 1;
+      padding: 40px;
+    }
+
+    h1 {
+      color: #007bff;
+      margin-top: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background-color: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 14px 18px;
+      border-bottom: 1px solid #e0e0e0;
+      text-align: center;
+    }
+
+    tr:hover {
+      background-color: #f7faff;
+    }
+
+    footer {
+      background-color: #003366;
+      color: white;
+      text-align: center;
+      padding: 20px 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="sidebar">
+      <h2 id="admin-name">Hello, Admin</h2>
+      <a href="/admin/dashboard/index.html">Dashboard</a>
+      <a href="/admin/flights/manage.html">Manage Flights</a>
+      <a href="/admin/airports/list.html">Airports</a>
+      <a href="/admin/users/list.html">Users</a>
+      <a href="/admin/bookings/index.html">Bookings</a>
+      <a href="/admin/reports/index.html">Reports</a>
+        <a href="/admin/profile/index.html">Profile</a>
+      <a href="/admin/auth/login.html" onclick="localStorage.clear()">Logout</a>
+    </div>
+    <div class="main">
+      <h1>Bookings</h1>
+      <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 20px;">
+        <label for="flightFilter">Flight:</label>
+        <select id="flightFilter" onchange="filterBookings()" style="padding: 6px 12px; border-radius: 5px; border: 1px solid #ccc;">
+          <option value="">All</option>
+        </select>
+
+        <label for="dateFilter">Date:</label>
+        <input type="date" id="dateFilter" onchange="filterBookings()" style="padding: 6px 12px; border-radius: 5px; border: 1px solid #ccc;">
+
+        <label for="searchInput">Search:</label>
+        <input type="text" id="searchInput" placeholder="Search bookings..." oninput="filterBookings()" style="padding: 6px 12px; border-radius: 5px; border: 1px solid #ccc; flex: 1;">
+      </div>
+      <table id="bookings-table">
+        <thead>
+          <tr>
+            <th>Booking ID</th>
+            <th>Flight No.</th>
+            <th>User Name</th>
+            <th>Seat</th>
+            <th>Class</th>
+            <th>Booking DateTime</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Departs</th>
+            <th>Arrives</th>
+            <th>Status</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+  <footer>
+    <p>&copy; 2025 FlyHigh Airlines. All rights reserved.</p>
+  </footer>
+
+  <script>
+    const adminId = localStorage.getItem('adminId');
+    const adminName = localStorage.getItem('adminName') || 'Admin';
+    document.getElementById('admin-name').textContent = `Hello, ${adminName}`;
+
+    if (!adminId) {
+      alert("Admin login required");
+      window.location.href = "/admin/auth/login.html";
+    }
+
+    let allBookings = [], allFlights = [], allUsers = [], myFlightIds = [];
+    let allAirports = [];
+
+Promise.all([
+  fetch("http://localhost:3000/flights").then(res => res.json()),
+  fetch("http://localhost:3000/bookings").then(res => res.json()),
+  fetch("http://localhost:3000/users").then(res => res.json()),
+  fetch("http://localhost:3000/airports").then(res => res.json())
+]).then(([flights, bookings, users, airports]) => {
+  allFlights = flights;
+  allBookings = bookings;
+  allUsers = users;
+  allAirports = airports;
+  myFlightIds = flights.filter(f => String(f.airlineAdminId) === String(adminId)).map(f => f.id);
+
+  const flightFilter = document.getElementById('flightFilter');
+  flights
+    .filter(f => myFlightIds.includes(f.id))
+    .forEach(f => {
+      const opt = document.createElement('option');
+      opt.value = f.id;
+      opt.textContent = f.flightNumber;
+      flightFilter.appendChild(opt);
+    });
+
+  renderTable(allBookings);
+});
+
+    function renderTable(bookings) {
+      const tbody = document.querySelector('#bookings-table tbody');
+      tbody.innerHTML = '';
+
+      bookings
+        .filter(b => myFlightIds.includes(b.flightId))
+        .forEach(b => {
+          const f = allFlights.find(flight => flight.id === b.flightId);
+          const u = allUsers.find(u => u.id === b.userId);
+          const fromAirport = allFlights.find(flt => flt.id === b.flightId)?.departureAirportId;
+          const toAirport = allFlights.find(flt => flt.id === b.flightId)?.arrivalAirportId;
+          const from = allAirports.find(ap => ap.id === fromAirport)?.city || '--';
+          const to = allAirports.find(ap => ap.id === toAirport)?.city || '--';
+
+          const bookedForDate = b.bookedFor ? new Date(`${b.bookedFor}T00:00:00`) : null;
+          const bookingDateTime = new Date(`${b.bookingDate}T${b.bookingTime}`);
+          const depDateTime = f ? new Date(`${b.bookedFor}T${String(f.departureHour).padStart(2, '0')}:${String(f.departureMinute).padStart(2, '0')}`) : null;
+          const arrDateTime = f ? new Date(`${b.bookedFor}T${String(f.arrivalHour).padStart(2, '0')}:${String(f.arrivalMinute).padStart(2, '0')}`) : null;
+
+          const formatDateTime = (date) =>
+            date ? new Intl.DateTimeFormat('en-GB', {
+              day: '2-digit', month: 'short', year: 'numeric',
+              hour: '2-digit', minute: '2-digit', hour12: true
+            }).format(date) : '--';
+
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${b.id}</td>
+            <td>${f ? f.flightNumber : '--'}</td>
+            <td>${u ? u.name : b.userId}</td>
+            <td>${b.seatNumber}</td>
+            <td>${b.seatClass}</td>
+            <td>${formatDateTime(bookingDateTime)}</td>
+            <td>${from}</td>
+            <td>${to}</td>
+            <td>${formatDateTime(depDateTime)}</td>
+            <td>${formatDateTime(arrDateTime)}</td>
+            <td>${b.status}</td>
+            <td>₹${b.amount}</td>
+          `;
+          tbody.appendChild(row);
+        });
+    }
+
+    function filterBookings() {
+      const flightId = document.getElementById('flightFilter').value;
+      const date = document.getElementById('dateFilter').value;
+      const search = document.getElementById('searchInput').value.toLowerCase().trim();
+
+      let filtered = allBookings;
+
+      if (flightId) {
+        filtered = filtered.filter(b => String(b.flightId) === flightId);
+      }
+
+      if (date) {
+        filtered = filtered.filter(b => b.bookingDate === date);
+      }
+
+      if (search) {
+        filtered = filtered.filter(b => {
+          const f = allFlights.find(flight => flight.id === b.flightId);
+          const u = allUsers.find(u => u.id === b.userId);
+          const from = allAirports.find(ap => ap.id === f?.departureAirportId)?.city?.toLowerCase() || '';
+          const to = allAirports.find(ap => ap.id === f?.arrivalAirportId)?.city?.toLowerCase() || '';
+          const name = u?.name?.toLowerCase() || '';
+          const seat = b.seatNumber?.toLowerCase() || '';
+          const flightNo = f?.flightNumber?.toLowerCase() || '';
+          const dateTime = `${b.bookingDate} ${b.bookingTime}`.toLowerCase();
+          const status = b.status?.toLowerCase() || '';
+          const classType = b.seatClass?.toLowerCase() || '';
+          return (
+            name.includes(search) ||
+            seat.includes(search) ||
+            flightNo.includes(search) ||
+            dateTime.includes(search) ||
+            from.includes(search) ||
+            to.includes(search) ||
+            status.includes(search) ||
+            classType.includes(search)
+          );
+        });
+      }
+
+      renderTable(filtered);
+    }
+  </script>
+</body>
+</html>

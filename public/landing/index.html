@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Flight Management System</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom, #e6f0ff 0%, #f9fbfd 100%);
+      color: #333;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    nav {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background-color: #003366;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      z-index: 1000;
+    }
+
+    nav .nav-links a {
+      color: #fff;
+      text-decoration: none;
+      margin: 0 15px;
+      font-weight: bold;
+    }
+
+    nav .nav-actions button {
+      background: #ffffff;
+      color: #003366;
+      border: none;
+      padding: 8px 16px;
+      font-weight: bold;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .main-content {
+      flex: 1;
+      padding-bottom: 60px;
+    }
+
+    .banner {
+      text-align: center;
+      background-color: #007bff;
+      color: white;
+      padding: 80px 20px 60px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .banner h1 {
+      font-size: 2.8em;
+      margin-bottom: 10px;
+    }
+
+    .banner p {
+      font-size: 1.3em;
+    }
+
+    .banner button {
+      margin-top: 20px;
+      padding: 12px 24px;
+      font-size: 1em;
+      background-color: white;
+      color: #007bff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .banner button:hover {
+      background-color: #e0e0e0;
+    }
+
+    .features, .promo, .testimonials {
+      max-width: 1000px;
+      margin: 40px auto;
+      text-align: center;
+      padding: 0 20px;
+    }
+
+    .features ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .features li {
+      margin: 10px 0;
+      font-size: 1.2em;
+    }
+
+    .cards {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .card {
+      background-color: white;
+      border: 1px solid #ccc;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 250px;
+      transition: transform 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+    }
+
+    .testimonials blockquote {
+      font-style: italic;
+      margin: 20px auto;
+      max-width: 700px;
+      color: #555;
+    }
+
+    footer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background-color: #003366;
+      color: white;
+      text-align: center;
+      padding: 20px 10px;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-links">
+      <a href="/public/landing/index.html">Home</a>
+      <a href="/public/faqs/index.html">FAQ</a>
+      <a href="/public/contact/index.html">Contact</a>
+    </div>
+    <div class="nav-actions">
+      <button onclick="window.location.href='/user/auth/login.html'">Login / Register</button>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <header class="banner">
+      <h1>Welcome to FlyHigh</h1>
+      <p>Your one-stop platform for seamless domestic flight bookings.</p>
+      <button onclick="window.location.href='/user/auth/login.html'">Book Now</button>
+    </header>
+
+    <section class="features">
+      <h2>Why Choose FlyHigh?</h2>
+      <ul>
+        <li>🛫 Easy flight search & booking</li>
+        <li>📱 Mobile-friendly interface</li>
+        <li>🔔 Real-time flight status alerts</li>
+        <li>🔐 Secure payments with Razorpay</li>
+        <li>💬 24/7 customer support</li>
+      </ul>
+    </section>
+
+    <section class="promo">
+      <h2>Deals of the Day</h2>
+      <div class="cards">
+        <div class="card">
+          <h3>Mumbai ✈️ Delhi</h3>
+          <p>From ₹1999 | Free seat selection</p>
+        </div>
+        <div class="card">
+          <h3>Bangalore ✈️ Hyderabad</h3>
+          <p>From ₹1499 | No convenience fee</p>
+        </div>
+        <div class="card">
+          <h3>Chennai ✈️ Kolkata</h3>
+          <p>From ₹2299 | Extra 5kg baggage</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="testimonials">
+      <h2>What Our Users Say</h2>
+      <blockquote>"Super easy booking and amazing customer service!" – Riya M.</blockquote>
+      <blockquote>"Got the best price for my trip to Mumbai. Will book again!" – Aarav S.</blockquote>
+    </section>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 FlyHigh Airlines. All rights reserved.</p>
+  </footer>
+</body>
+</html>

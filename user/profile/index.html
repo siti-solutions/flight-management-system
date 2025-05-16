@@ -1,0 +1,186 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Profile</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f8fb;
+      color: #333;
+    }
+
+    .container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      flex: 0 0 280px;
+      background-color: #003366;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100vh;
+      padding: 20px;
+    }
+
+    .sidebar .top {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar h2 {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+      font-weight: normal;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+      padding-bottom: 10px;
+    }
+
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      margin: 10px 0;
+      font-weight: bold;
+    }
+
+    .main {
+      flex: 1;
+      padding: 40px;
+    }
+
+    h1 {
+      color: #007bff;
+    }
+
+    form {
+      background-color: white;
+      padding: 30px 50px;
+      border-radius: 10px;
+      max-width: 600px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="sidebar">
+      <div class="top">
+        <h2 id="user-name">Hello, User</h2>
+        <a href="/user/booking/search.html">Search Flights</a>
+        <a href="/user/my-flights/index.html">My Flights</a>
+        <a href="/user/profile/index.html">Profile</a>
+        <a href="/user/auth/login.html" onclick="localStorage.clear()">Logout</a>
+      </div>
+    </div>
+
+    <div class="main">
+      <h1>My Profile</h1>
+      <form id="profile-form">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" readonly required>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" readonly required>
+
+        <label for="phoneNumber">Phone Number:</label>
+        <input type="text" id="phoneNumber" name="phoneNumber" readonly required>
+
+        <label for="passportNumber">Passport Number:</label>
+        <input type="text" id="passportNumber" name="passportNumber" readonly required>
+
+        <button type="button" id="edit-btn">Edit Profile</button>
+        <button type="submit" id="save-btn" style="display:none;">Save Changes</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const userId = localStorage.getItem('userId');
+    const userName = localStorage.getItem('userName') || 'User';
+    document.getElementById('user-name').textContent = `Hello, ${userName}`;
+
+    if (!userId) {
+      alert("Please log in.");
+      window.location.href = "/user/auth/login.html";
+    }
+
+    const form = document.getElementById('profile-form');
+    const editBtn = document.getElementById('edit-btn');
+    const saveBtn = document.getElementById('save-btn');
+    const fields = ['name', 'email', 'phoneNumber', 'passportNumber'];
+
+    fetch(`http://localhost:3000/users/${userId}`)
+      .then(res => res.json())
+      .then(user => {
+        document.getElementById('name').value = user.name || '';
+        document.getElementById('email').value = user.email || '';
+        document.getElementById('phoneNumber').value = user.phoneNumber || '';
+        document.getElementById('passportNumber').value = user.passportNumber || '';
+      });
+
+    editBtn.addEventListener('click', () => {
+      fields.forEach(id => document.getElementById(id).removeAttribute('readonly'));
+      editBtn.style.display = 'none';
+      saveBtn.style.display = 'inline-block';
+    });
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const updatedUser = {
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        phoneNumber: document.getElementById('phoneNumber').value,
+        passportNumber: document.getElementById('passportNumber').value
+      };
+
+      fetch(`http://localhost:3000/users/${userId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedUser)
+      })
+      .then(() => {
+        fields.forEach(id => document.getElementById(id).setAttribute('readonly', 'readonly'));
+        editBtn.style.display = 'inline-block';
+        saveBtn.style.display = 'none';
+      })
+      .catch(() => alert("Failed to update profile."));
+    });
+  </script>
+</body>
+</html>

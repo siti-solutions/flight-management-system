@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Reports</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f8fb;
+      color: #333;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .container {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .sidebar {
+      width: 280px;
+      background-color: #003366;
+      color: white;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #admin-name {
+      color: white;
+    }
+
+    .sidebar h2 {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+      font-weight: normal;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+      padding-bottom: 10px;
+    }
+
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      margin: 10px 0;
+      font-weight: bold;
+    }
+
+    .sidebar a:hover {
+      text-decoration: underline;
+    }
+
+    .main {
+      flex: 1;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    h1, h2 {
+      color: #007bff;
+      margin-top: 0;
+    }
+
+    .report-summary {
+      margin-bottom: 30px;
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .report-summary p {
+      font-size: 1.1em;
+      margin: 10px 0;
+    }
+
+    .chart-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 30px;
+    }
+
+    .chart-grid > div {
+      background: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chart-grid h2 {
+      font-size: 16px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .chart-grid div > div {
+      height: 400px;
+      width: 100%;
+    }
+
+    footer {
+      background-color: #003366;
+      color: white;
+      text-align: center;
+      padding: 20px 10px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 30px;
+      margin-bottom: 40px;
+      text-align: center;
+    }
+
+    .stat {
+      font-size: 2.5em;
+      font-weight: bold;
+      color: #003366;
+      margin: 10px 0 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="sidebar">
+      <h2 id="admin-name">Admin</h2>
+      <a href="/admin/dashboard/index.html">Dashboard</a>
+      <a href="/admin/flights/manage.html">Manage Flights</a>
+      <a href="/admin/airports/list.html">Airports</a>
+      <a href="/admin/users/list.html">Users</a>
+      <a href="/admin/bookings/index.html">Bookings</a>
+      <a href="/admin/reports/index.html">Reports</a>
+        <a href="/admin/profile/index.html">Profile</a>
+      <a href="/admin/auth/login.html" onclick="localStorage.clear()">Logout</a>
+    </div>
+    <div class="main">
+      <h1>Reports</h1>
+      <div class="report-summary">
+        <p><strong>Total Bookings:</strong> <span id="total-bookings">--</span></p>
+        <p><strong>Total Revenue:</strong> ₹<span id="total-revenue">--</span></p>
+      </div>
+      <div class="stats-grid">
+        <div>
+          <h3>Total Bookings</h3>
+          <p class="stat" id="total-bookings-stat">--</p>
+        </div>
+        <div>
+          <h3>Total Revenue</h3>
+          <p class="stat">₹<span id="total-revenue-stat">--</span></p>
+        </div>
+        <div>
+          <h3>Cancelled Bookings</h3>
+          <p class="stat" id="cancelled-bookings-stat">--</p>
+        </div>
+      </div>
+
+      <div class="chart-grid">
+        <div>
+          <h2>Bookings Over Time</h2>
+          <canvas id="timeChart"></canvas>
+        </div>
+        <div>
+          <h2>Revenue Overview</h2>
+          <canvas id="revenueChart"></canvas>
+        </div>
+        <div>
+          <h2>Class Distribution</h2>
+          <canvas id="classChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer>
+    <p>&copy; 2025 FlyHigh Airlines. All rights reserved.</p>
+  </footer>
+
+  <script>
+    const adminId = localStorage.getItem('adminId');
+    const adminName = localStorage.getItem('adminName') || 'Admin';
+    document.getElementById('admin-name').textContent = `Hello, ${adminName}`;
+
+    Promise.all([
+      fetch('http://localhost:3000/bookings').then(res => res.json()),
+      fetch('http://localhost:3000/flights').then(res => res.json())
+    ]).then(([bookings, flights]) => {
+      let totalBookings = 0;
+      let totalRevenue = 0;
+      const flightLabels = [];
+      const bookingCounts = [];
+      const revenueTotals = [];
+      const classCount = { Economy: 0, Business: 0, First: 0 };
+      const timeSeries = {};
+      const routeMap = {};
+      let cancelledBookings = 0;
+
+      const relevantFlights = flights.filter(f => f.airlineAdminId == adminId && !f.deleted);
+      relevantFlights.forEach(flight => {
+        const flightBookings = bookings.filter(b => b.flightId == flight.id && !b.deleted);
+        const bookingCount = flightBookings.length;
+        const amountTotal = flightBookings.reduce((sum, b) => sum + (b.amount || 0), 0);
+
+        totalBookings += bookingCount;
+        totalRevenue += amountTotal;
+
+        flightLabels.push(flight.flightNumber);
+        bookingCounts.push(bookingCount);
+        revenueTotals.push(amountTotal);
+
+        flightBookings.forEach(b => {
+          if (classCount[b.seatClass]) classCount[b.seatClass]++;
+          else classCount[b.seatClass] = 1;
+
+          if (b.bookedFor) timeSeries[b.bookedFor] = (timeSeries[b.bookedFor] || 0) + 1;
+          if (b.status === 'Cancelled') cancelledBookings++;
+
+          const route = `${flight.departureAirportId} → ${flight.arrivalAirportId}`;
+          routeMap[route] = (routeMap[route] || 0) + 1;
+        });
+      });
+
+      document.getElementById('total-bookings').textContent = totalBookings;
+      document.getElementById('total-revenue').textContent = totalRevenue;
+
+      document.getElementById('total-bookings-stat').textContent = totalBookings;
+      document.getElementById('total-revenue-stat').textContent = totalRevenue;
+      document.getElementById('cancelled-bookings-stat').textContent = cancelledBookings;
+
+      new Chart(document.getElementById('revenueChart'), {
+        type: 'bar',
+        data: {
+          labels: flightLabels,
+          datasets: [{
+            label: 'Revenue (₹)',
+            data: revenueTotals,
+            backgroundColor: '#28a745'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: { display: true, text: 'Flight-wise Revenue' },
+            legend: { display: false }
+          }
+        }
+      });
+
+      new Chart(document.getElementById('classChart'), {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(classCount),
+          datasets: [{
+            label: 'Seat Class',
+            data: Object.values(classCount),
+            backgroundColor: ['#007bff', '#ffc107', '#dc3545']
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: { display: true, text: 'Seat Class Distribution' }
+          }
+        }
+      });
+
+      const sortedDates = Object.keys(timeSeries).sort();
+      new Chart(document.getElementById('timeChart'), {
+        type: 'line',
+        data: {
+          labels: sortedDates,
+          datasets: [{
+            label: 'Bookings',
+            data: sortedDates.map(d => timeSeries[d]),
+            borderColor: '#6610f2',
+            backgroundColor: 'rgba(102, 16, 242, 0.2)',
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: { display: true, text: 'Bookings Over Time' }
+          }
+        }
+      });
+    }).catch(err => {
+      console.error('Error loading reports:', err);
+    });
+  </script>
+</body>
+</html>
