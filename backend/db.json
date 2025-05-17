@@ -1,0 +1,139 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "name": "Alice Sharma",
+      "email": "alice@example.com",
+      "password": "pass123",
+      "phoneNumber": "9876543210",
+      "passportNumber": "A12345678",
+      "deleted": false
+    },
+    {
+      "id": "2",
+      "name": "Bob Verma",
+      "email": "bob@example.com",
+      "password": "pass456",
+      "phoneNumber": "9876543211",
+      "passportNumber": "B87654321",
+      "deleted": false
+    },
+    {
+      "id": "8a06",
+      "name": "Shantanu Iyengar",
+      "email": "shantanu@app.com",
+      "password": "1234",
+      "phoneNumber": "843380600123",
+      "passportNumber": "R7691234512",
+      "deleted": false
+    }
+  ],
+  "airlineAdmins": [
+    {
+      "id": "1",
+      "name": "IndiGo Admin",
+      "email": "admin@indigo.com",
+      "password": "admin123",
+      "contactNumber": "1234567890",
+      "airlineName": "IndiGo",
+      "deleted": false
+    }
+  ],
+  "airports": [
+    {
+      "id": "1",
+      "airportName": "Chhatrapati Shivaji Maharaj International Airport",
+      "city": "Mumbai",
+      "contact": "022-66851010",
+      "deleted": false
+    },
+    {
+      "id": "2",
+      "airportName": "Indira Gandhi International Airport",
+      "city": "Delhi",
+      "contact": "011-47198600",
+      "deleted": false
+    }
+  ],
+  "flights": [
+    {
+      "id": "1",
+      "flightNumber": "6E101",
+      "departureHour": 10,
+      "departureMinute": 0,
+      "arrivalHour": 12,
+      "arrivalMinute": 0,
+      "status": "Scheduled",
+      "aircraftModel": "Airbus A320",
+      "capacity": 180,
+      "airlineAdminId": "1",
+      "departureAirportId": 1,
+      "arrivalAirportId": 2,
+      "disabled": false,
+      "deleted": false
+    },
+    {
+      "id": "1042",
+      "flightNumber": "6E102",
+      "departureHour": 12,
+      "departureMinute": 30,
+      "arrivalHour": 14,
+      "arrivalMinute": 20,
+      "status": "Scheduled",
+      "aircraftModel": "Airbus A250",
+      "capacity": 100,
+      "airlineAdminId": 1,
+      "deleted": false
+    }
+  ],
+  "bookings": [
+    {
+      "id": "c7e0",
+      "userId": "8a06",
+      "flightId": "1",
+      "seatNumber": "13C",
+      "seatClass": "Economy",
+      "bookingDate": "2025-05-16",
+      "bookingTime": "22:09",
+      "bookedFor": "2025-05-22",
+      "status": "Confirmed",
+      "amount": 4500,
+      "deleted": false
+    },
+    {
+      "id": "bb32",
+      "userId": "8a06",
+      "flightId": 1,
+      "seatNumber": "5A",
+      "seatClass": "Business",
+      "bookingDate": "2025-05-16",
+      "bookingTime": "23:13",
+      "bookedFor": "2025-05-28",
+      "status": "Confirmed",
+      "amount": 4500,
+      "deleted": false
+    }
+  ],
+  "payments": [
+    {
+      "id": "1",
+      "bookingId": 1,
+      "userId": 1,
+      "amount": 4500,
+      "paymentMethod": "Card",
+      "paymentDate": "2025-05-16",
+      "paymentTime": "09:05",
+      "deleted": false
+    },
+    {
+      "id": "2",
+      "bookingId": 2,
+      "userId": 2,
+      "amount": 4500,
+      "paymentMethod": "UPI",
+      "paymentDate": "2025-05-16",
+      "paymentTime": "09:35",
+      "deleted": false
+    }
+  ]
+}
